@@ -141,7 +141,16 @@ Press the desired control or escape key combination when prompted; `Ctrl+G`
 cancels. The shortcut is stored as JSON in
 `~/.config/zsh-ai-complete/settings.json`. Start a new Zsh session to apply
 the change. This may override an existing Zsh or plugin binding, so choose an
-unused shortcut. Delete this settings file to restore the default.
+unused shortcut. The picker checks the current Zsh `main` keymap and warns
+about some common terminal, tmux, and GNU Screen shortcuts; it asks for
+confirmation before saving a potential conflict. Delete the settings file to
+restore the default.
+
+This check is advisory: shortcuts vary by terminal, operating system, keymap,
+and user configuration. Some shortcuts are intercepted before Zsh receives
+them, and some key combinations produce the same terminal byte sequence. If a
+key does not reach the prompt, cancel with `Ctrl+G` and try another shortcut.
+Bindings installed after this plugin loads can override it.
 
 | Key       | Action                                |
 |-----------|----------------------------------------|

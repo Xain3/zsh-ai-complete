@@ -25,10 +25,11 @@ class ShortcutTests(unittest.TestCase):
         return subprocess.run(["zsh", "-f", "-c", script, "zsh", key],
                               env=self.env, text=True, capture_output=True, check=True)
 
-    def capture(self, key):
+    def capture(self, key, confirmation=b"y\n", setup=""):
         master, slave = pty.openpty()
+        script = 'source "$TEST_PLUGIN"; ' + (setup + '; ' if setup else '')
         proc = subprocess.Popen(["zsh", "-f", "-c",
-                                 'source "$TEST_PLUGIN"; zsh-ai-complete config shortcut'],
+                                 script + 'zsh-ai-complete config shortcut'],
                                 stdin=slave, stdout=slave, stderr=slave, env=self.env,
                                 start_new_session=True)
         os.close(slave)
@@ -41,7 +42,30 @@ class ShortcutTests(unittest.TestCase):
                 output += os.read(master, 4096)
         self.assertIn(b"Press the shortcut", output)
         os.write(master, key)
-        status = proc.wait(timeout=5)
+        deadline = time.monotonic() + 5
+        answered = False
+        while proc.poll() is None and time.monotonic() < deadline:
+            ready, _, _ = select.select([master], [], [], 0.1)
+            if ready:
+                try:
+                    output += os.read(master, 4096)
+                except OSError:
+                    break
+            if not answered and b"Save this shortcut anyway?" in output:
+                os.write(master, confirmation)
+                answered = True
+        try:
+            status = proc.wait(timeout=1)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+            proc.wait()
+            self.fail("Shortcut picker did not exit")
+        try:
+            while select.select([master], [], [], 0)[0]:
+                output += os.read(master, 4096)
+        except OSError:
+            pass
+        self.last_output = output.decode(errors="replace")
         return status
 
     def test_default_binding(self):
@@ -49,6 +73,7 @@ class ShortcutTests(unittest.TestCase):
 
     def test_capture_and_reload_control_key(self):
         self.assertEqual(self.capture(b"\x18"), 0)
+        self.assertNotIn("Warning:", self.last_output)
         self.assertEqual(json.loads(self.settings.read_text())["shortcut"], "\x18")
         self.assertIn("ai_complete_widget", self.binding("\x18").stdout)
 
@@ -61,6 +86,22 @@ class ShortcutTests(unittest.TestCase):
         self.assertNotEqual(self.capture(b"\x07"), 0)
         self.assertNotEqual(self.capture(b"x"), 0)
         self.assertFalse(self.settings.exists())
+
+    def test_warns_for_common_and_existing_binding_and_requires_confirmation(self):
+        self.assertNotEqual(self.capture(b"\x12", b"n\n"), 0)
+        self.assertIn("commonly searches command history", self.last_output)
+        self.assertIn("history-incremental-search-backward", self.last_output)
+        self.assertFalse(self.settings.exists())
+        self.assertEqual(self.capture(b"\x12", b"y\n"), 0)
+        self.assertEqual(json.loads(self.settings.read_text())["shortcut"], "\x12")
+        self.assertNotEqual(self.capture(b"\x01", b"n\n"), 0)
+        self.assertIn("GNU Screen", self.last_output)
+        self.assertEqual(json.loads(self.settings.read_text())["shortcut"], "\x12")
+
+    def test_warns_for_custom_binding(self):
+        self.assertEqual(self.capture(b"\x18", b"y\n", "bindkey '^X' backward-char"), 0)
+        self.assertIn("current Zsh main keymap binding", self.last_output)
+        self.assertIn("backward-char", self.last_output)
 
     def test_preserves_existing_settings_and_rejects_invalid_json(self):
         self.settings.parent.mkdir(parents=True)

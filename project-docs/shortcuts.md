@@ -52,6 +52,18 @@ Once the AI assistant is triggered and the FZF interface is visible:
   effect in a new Zsh session. Delete the settings file to restore `Ctrl+U`.
 - The selected key may already be assigned by Zsh or another plugin. The
   `Ctrl+E` and `ESC` shortcuts inside FZF are not changed by this setting.
+- The picker checks the current Zsh `main` keymap and warns about selected
+  commonly used shortcuts. It asks before saving a possible conflict.
+- This is not a complete system-wide conflict detector. Terminals, desktop
+  environments, and multiplexers can intercept or remap keys before Zsh sees
+  them, and some combinations are indistinguishable in terminal input. A key
+  intercepted before capture cannot trigger a warning. Later shell setup may
+  also change the binding.
+
+The common-default warnings are informed by the maintained upstream
+[Zsh keymap documentation](https://zsh.sourceforge.io/Doc/Release/Zsh-Line-Editor.html),
+[tmux FAQ](https://github.com/tmux/tmux/wiki/FAQ), and
+[GNU Screen manual](https://www.gnu.org/software/screen/manual/screen.html).
 
 ---
 

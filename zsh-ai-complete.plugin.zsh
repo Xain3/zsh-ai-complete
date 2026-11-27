@@ -40,7 +40,7 @@ zsh-ai-complete() {
     return 1
   fi
 
-  local key part tmp settings_dir="${_zsh_ai_settings:h}"
+  local key part tmp binding common_warning answer settings_dir="${_zsh_ai_settings:h}"
   print -u2 -n 'Press the shortcut to use (Ctrl+G cancels): '
   if ! IFS= read -rs -k 1 key; then
     print -u2 '\n[zsh-ai-complete] Could not read a key.'
@@ -59,6 +59,35 @@ zsh-ai-complete() {
   if [[ "$key" == [[:print:]] || "$key" == $'\e' || "$key" == *$'\n'* || "$key" == *$'\r'* || -z "$key" ]]; then
     print -u2 '[zsh-ai-complete] Choose a control or escape key combination.'
     return 1
+  fi
+
+  # The terminal may intercept keys before Zsh can observe them. These are
+  # common defaults, not a claim about the user's terminal or multiplexer.
+  case "$key" in
+    $'\C-a') common_warning='Ctrl+A is commonly used for line start or as the GNU Screen prefix.' ;;
+    $'\C-b') common_warning='Ctrl+B is commonly used for cursor movement or as the tmux prefix.' ;;
+    $'\C-c') common_warning='Ctrl+C commonly interrupts the foreground process.' ;;
+    $'\C-d') common_warning='Ctrl+D commonly sends EOF or deletes a character.' ;;
+    $'\C-i') common_warning='Ctrl+I is usually indistinguishable from Tab (completion).' ;;
+    $'\C-l') common_warning='Ctrl+L commonly clears the terminal display.' ;;
+    $'\C-q'|$'\C-s') common_warning='Ctrl+Q/Ctrl+S may control terminal output flow.' ;;
+    $'\C-r') common_warning='Ctrl+R commonly searches command history.' ;;
+    $'\C-u') common_warning='Ctrl+U commonly clears text before the cursor.' ;;
+    $'\C-w') common_warning='Ctrl+W commonly deletes the previous word.' ;;
+    $'\C-z') common_warning='Ctrl+Z commonly suspends the foreground process.' ;;
+  esac
+  binding=$(bindkey -M main "$key" 2>/dev/null)
+  if [[ "$binding" == *' undefined-key' || "$binding" == *' ai_complete_widget' ]]; then
+    binding=''
+  fi
+  if [[ -n "$common_warning" || -n "$binding" ]]; then
+    [[ -n "$common_warning" ]] && print -u2 -r -- "Warning: $common_warning"
+    [[ -n "$binding" ]] && print -u2 -r -- "Warning: current Zsh main keymap binding: $binding"
+    print -u2 -n 'Save this shortcut anyway? [y/N] '
+    if ! IFS= read -r answer || [[ "$answer" != [yY] ]]; then
+      print -u2 'Cancelled; shortcut not changed.'
+      return 1
+    fi
   fi
   if [[ -f "$_zsh_ai_settings" ]] && ! jq -e 'type == "object"' "$_zsh_ai_settings" >/dev/null 2>&1; then
     print -u2 '[zsh-ai-complete] Settings are not a JSON object; fix the file before updating it.'
