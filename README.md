@@ -94,6 +94,22 @@ On first use, the plugin creates:
 ~/.config/zsh-ai-complete/ai-providers.json
 ```
 
+The default provider on first use is Ollama at `http://localhost:11434/api/chat`.
+Choose another configured provider with Ctrl+E. Existing provider selections are
+preserved. The Ollama example does not require an API token.
+
+Queries are sent to the selected provider as you type after a short pause. With
+the default endpoint they go to the local Ollama service; check the configured
+URL before entering sensitive text. Suggestions are inserted into your command
+line and run only when you execute them. Review them first. New configuration
+files are created with restrictive permissions; check permissions on any files
+that already existed.
+
+Provider tokens require HTTPS for non-loopback endpoints. Plain HTTP with a
+token is permitted only for `localhost`, `127.0.0.1`, or `[::1]`. Requests
+without a token may still use HTTP, so use HTTPS for remote services to protect
+query contents in transit.
+
 Based on the example:
 
 ```bash
