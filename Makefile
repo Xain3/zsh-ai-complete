@@ -19,10 +19,10 @@ help:
 .PHONY: install
 install:
 	@echo "[INFO] Creating config directory if needed..."
-	@mkdir -p $(CONFIG_DIR)
-	@if [ ! -f $(CONFIG_FILE) ]; then \
-		if [ -f $(EXAMPLE_FILE) ]; then \
-			cp $(EXAMPLE_FILE) $(CONFIG_FILE); \
+	@(umask 077; mkdir -p "$(CONFIG_DIR)")
+	@if [ ! -f "$(CONFIG_FILE)" ]; then \
+		if [ -f "$(EXAMPLE_FILE)" ]; then \
+			(umask 077; cp "$(EXAMPLE_FILE)" "$(CONFIG_FILE)" && chmod 600 "$(CONFIG_FILE)") || exit 1; \
 			echo "[SUCCESS] Created config file at $(CONFIG_FILE)"; \
 		else \
 			echo "[ERROR] Example config file not found."; \
