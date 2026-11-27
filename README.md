@@ -146,9 +146,37 @@ See [`project-docs/examples.md`](./project-docs/examples.md) for full walkthroug
 
 ## ⌨️ Shortcuts
 
+The activation shortcut defaults to `Ctrl+U`. To choose another shortcut,
+run this command in an interactive Zsh session after loading the plugin:
+
+```zsh
+zsh-ai-complete config shortcut
+```
+
+Press the desired control or escape key combination when prompted; `Ctrl+G`
+cancels. The shortcut is stored as JSON in
+`~/.config/zsh-ai-complete/settings.json`. Start a new Zsh session to apply
+the change. This may override an existing Zsh or plugin binding, so choose an
+unused shortcut. The picker checks the current Zsh `main` keymap and warns
+about some common terminal, tmux, and GNU Screen shortcuts; it asks for
+confirmation before saving a potential conflict. Delete the settings file to
+restore the default.
+
+This check is advisory: shortcuts vary by terminal, operating system, keymap,
+and user configuration. Some shortcuts are intercepted before Zsh receives
+them, and some key combinations produce the same terminal byte sequence. If a
+key does not reach the prompt, cancel with `Ctrl+G` and try another shortcut.
+Bindings installed after this plugin loads can override it.
+
+On WSL, the picker also points out common Windows and Windows Terminal
+shortcuts before capture. It warns when a captured byte sequence could be a
+Windows Terminal shortcut, but cannot determine whether Shift was pressed
+when the terminal sends the same bytes. It does not inspect your actual
+Windows or Windows Terminal settings.
+
 | Key       | Action                                |
 |-----------|----------------------------------------|
-| `Ctrl+U`  | Launch the AI command assistant        |
+| `Ctrl+U`  | Launch the AI command assistant (default, configurable) |
 | `Ctrl+E`  | Switch between configured providers    |
 | `ESC`     | Cancel without applying a suggestion   |
 
