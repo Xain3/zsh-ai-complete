@@ -21,6 +21,11 @@
 **zsh-ai-complete** is a Zsh plugin that brings artificial intelligence to your terminal.
 It suggests and completes Zsh commands in real time using natural language or partial input.
 
+This is [Xain3's fork](https://github.com/Xain3/zsh-ai-complete) of the
+[original zsh-ai-complete project](https://github.com/lgdevlop/zsh-ai-complete),
+created by [Leonardo Gomes](https://github.com/lgdevlop). The fork adds security
+and privacy improvements and a configurable activation shortcut.
+
 - 🤖 Works with OpenAI, Ollama, Gemini, and more
 - ⚡ Instant AI-powered command suggestions
 - 🔄 Switch providers live with `Ctrl+E`
@@ -47,7 +52,7 @@ Make sure the following tools are installed on your system:
 ### Manual
 
 ```bash
-git clone https://github.com/lgdevlop/zsh-ai-complete.git ~/.zsh-ai-complete
+git clone https://github.com/Xain3/zsh-ai-complete.git ~/.zsh-ai-complete
 echo "source ~/.zsh-ai-complete/zsh-ai-complete.plugin.zsh" >> ~/.zshrc
 source ~/.zshrc
 ```
@@ -55,19 +60,19 @@ source ~/.zshrc
 ### Zinit
 
 ```zsh
-zinit light lgdevlop/zsh-ai-complete
+zinit light Xain3/zsh-ai-complete
 ```
 
 ### Antigen
 
 ```zsh
-antigen bundle lgdevlop/zsh-ai-complete
+antigen bundle Xain3/zsh-ai-complete
 ```
 
 ### Oh My Zsh (manual plugin)
 
 ```bash
-git clone https://github.com/lgdevlop/zsh-ai-complete.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-ai-complete
+git clone https://github.com/Xain3/zsh-ai-complete.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-ai-complete
 ```
 
 Then add to your `.zshrc`:
@@ -208,9 +213,10 @@ MIT — See [`LICENSE`](./LICENSE).
 
 ---
 
-## 👤 Author
+## 👤 Credits
 
-Made with ❤️ by [Leonardo Gomes](https://github.com/lgdevlop)
+Originally created by [Leonardo Gomes](https://github.com/lgdevlop).
+This fork is maintained by [Xain3](https://github.com/Xain3).
 
 ---
 
