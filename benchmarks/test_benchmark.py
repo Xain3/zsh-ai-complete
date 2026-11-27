@@ -23,8 +23,8 @@ syntax_spec.loader.exec_module(syntax_analysis)
 class BenchmarkTests(unittest.TestCase):
     def test_dataset_contains_one_hundred_unique_cases(self):
         _, cases = benchmark.load_cases()
-        self.assertEqual(len(cases), 130)
-        self.assertEqual(len({case['prompt'] for case in cases}), 130)
+        self.assertEqual(len(cases), 140)
+        self.assertEqual(len({case['prompt'] for case in cases}), 140)
 
     def test_cloud_is_explicit_and_requires_a_key(self):
         with patch.dict(os.environ, {}, clear=True):
@@ -98,8 +98,8 @@ class BenchmarkTests(unittest.TestCase):
                     benchmark.main()
             records = [json.loads(line) for line in output.read_text().splitlines()]
             summary = json.loads(Path(str(output) + '.summary.json').read_text())
-            self.assertEqual(len(records), 130)
-            self.assertEqual(summary['successful_prompts'], 130)
+            self.assertEqual(len(records), 140)
+            self.assertEqual(summary['successful_prompts'], 140)
             self.assertEqual(summary['backend'], 'ollama')
 
 

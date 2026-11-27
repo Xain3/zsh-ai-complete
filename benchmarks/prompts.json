@@ -193,5 +193,20 @@
       "show last ten lins of app.log",
       "count uniqe lines in names.txt"
     ]
+  },
+  {
+    "category": "vague-context",
+    "prompts": [
+      "What now?\n$ git status\nOn branch feature\nChanges not staged for commit: modified: app.py",
+      "Can you fix this?\n$ python app.py\nModuleNotFoundError: No module named requests",
+      "Why is this happening?\n$ df -h .\nFilesystem Size Used Avail Use%\n/dev/sda1 100G 99G 1G 99%",
+      "Make this better:\nfor f in *.txt; do cat \"$f\"; done",
+      "Help with this output:\n$ docker ps\nCONTAINER ID IMAGE STATUS\na1b2 web Exited (1) 2 minutes ago",
+      "What should I do here?\n$ git push\n! [rejected] main -> main (non-fast-forward)",
+      "This looks odd:\n$ ls -l report.txt\n-rw------- 1 root root 24 report.txt",
+      "Can I see more?\n$ tail -n 2 app.log\nERROR connection timed out\nRetrying in 5 seconds",
+      "How do I check this?\nserver = {\"host\": \"localhost\", \"port\": 8080}\n# service starts but requests fail",
+      "Something seems slow:\n$ ps -eo pid,pcpu,comm --sort=-pcpu | head\n1234 95.2 python3"
+    ]
   }
 ]

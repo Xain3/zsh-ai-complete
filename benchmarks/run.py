@@ -27,8 +27,8 @@ def load_cases():
     cases = [{'id': f'{group["category"]}-{index:02d}', 'category': group['category'],
               'prompt': prompt}
              for group in groups for index, prompt in enumerate(group['prompts'], 1)]
-    if len(cases) != 130 or len({case['id'] for case in cases}) != 130:
-        raise ValueError('The benchmark dataset must contain exactly 130 unique cases.')
+    if len(cases) != 140 or len({case['id'] for case in cases}) != 140:
+        raise ValueError('The benchmark dataset must contain exactly 140 unique cases.')
     return raw, cases
 
 
