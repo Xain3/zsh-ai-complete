@@ -37,9 +37,12 @@ jq -n --arg marker "$marker" '{ollama:{url:"http://localhost:11434/api/chat",mod
 printf ollama > "$tmp/selection"
 result=$(FZF_QUERY="$query" bash "$root/request.sh" "$tmp/config" "$tmp/selection")
 [[ $result == 'echo safe' && ! -e $marker ]]
+if grep -q SENSITIVE_QUERY_MARKER "$tmp/jq-args"; then
+  echo 'Query text appeared in jq arguments' >&2
+  exit 1
+fi
 jq -e --arg q "$query" '.messages[1].content == $q' "$tmp/payload" >/dev/null
 ! grep -q secret-token "$tmp/args"
-! grep -q SENSITIVE_QUERY_MARKER "$tmp/jq-args"
 grep -q secret-token "$tmp/curl-config"
 
 # Reject cleartext remote credentials, including hostnames that only resemble
