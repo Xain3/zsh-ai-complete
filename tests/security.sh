@@ -33,6 +33,27 @@ jq -e --arg q "$query" '.messages[1].content == $q' "$tmp/payload" >/dev/null
 ! grep -q secret-token "$tmp/args"
 grep -q secret-token "$tmp/curl-config"
 
+# Reject cleartext remote credentials, including hostnames that only resemble
+# loopback. The fake curl leaves a marker if a request was attempted.
+for url in 'http://example.com/api' 'http://localhost.example.com/api' 'http://localhost@evil.example/api'; do
+  jq --arg url "$url" '.ollama.url = $url' "$tmp/config" > "$tmp/remote-config"
+  rm -f "$tmp/args"
+  if bash "$root/request.sh" "$tmp/remote-config" "$tmp/selection" query 2>/dev/null; then
+    echo "Accepted insecure authenticated URL: $url" >&2
+    exit 1
+  fi
+  [[ ! -e "$tmp/args" ]]
+done
+jq '.ollama.url = "https://example.com/api"' "$tmp/config" > "$tmp/remote-config"
+bash "$root/request.sh" "$tmp/remote-config" "$tmp/selection" query >/dev/null
+[[ -e "$tmp/args" ]]
+for url in 'http://localhost:11434/api/chat' 'http://127.0.0.1/api' 'http://[::1]:11434/api'; do
+  jq --arg url "$url" '.ollama.url = $url' "$tmp/config" > "$tmp/remote-config"
+  bash "$root/request.sh" "$tmp/remote-config" "$tmp/selection" query >/dev/null
+done
+jq '.ollama.url = "http://example.com/api" | .ollama.token = ""' "$tmp/config" > "$tmp/remote-config"
+bash "$root/request.sh" "$tmp/remote-config" "$tmp/selection" query >/dev/null
+
 # The ZLE widget only inserts a selected suggestion; cancel leaves input intact.
 export PLUGIN_TEST_ROOT="$root"
 zsh -c '
