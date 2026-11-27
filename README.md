@@ -152,6 +152,12 @@ them, and some key combinations produce the same terminal byte sequence. If a
 key does not reach the prompt, cancel with `Ctrl+G` and try another shortcut.
 Bindings installed after this plugin loads can override it.
 
+On WSL, the picker also points out common Windows and Windows Terminal
+shortcuts before capture. It warns when a captured byte sequence could be a
+Windows Terminal shortcut, but cannot determine whether Shift was pressed
+when the terminal sends the same bytes. It does not inspect your actual
+Windows or Windows Terminal settings.
+
 | Key       | Action                                |
 |-----------|----------------------------------------|
 | `Ctrl+U`  | Launch the AI command assistant (default, configurable) |

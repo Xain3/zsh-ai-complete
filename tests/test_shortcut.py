@@ -103,6 +103,20 @@ class ShortcutTests(unittest.TestCase):
         self.assertIn("current Zsh main keymap binding", self.last_output)
         self.assertIn("backward-char", self.last_output)
 
+    def test_wsl_guidance_and_possible_terminal_shortcut(self):
+        self.assertNotEqual(self.capture(b"\x14", b"n\n", "_zsh_ai_is_wsl() { return 0; }"), 0)
+        self.assertIn("WSL: Windows Terminal may intercept", self.last_output)
+        self.assertIn("Win+L, Win+D, and Alt+Tab", self.last_output)
+        self.assertIn("Ctrl+Shift+W can close", self.last_output)
+        self.assertIn("may also represent Ctrl+Shift+T", self.last_output)
+        self.assertFalse(self.settings.exists())
+        self.assertNotEqual(self.capture(b"\x17", b"n\n", "_zsh_ai_is_wsl() { return 0; }"), 0)
+        self.assertIn("may also represent Ctrl+Shift+W", self.last_output)
+
+    def test_wsl_guidance_is_not_shown_on_other_systems(self):
+        self.assertEqual(self.capture(b"\x18", setup="_zsh_ai_is_wsl() { return 1; }"), 0)
+        self.assertNotIn("WSL: Windows Terminal", self.last_output)
+
     def test_preserves_existing_settings_and_rejects_invalid_json(self):
         self.settings.parent.mkdir(parents=True)
         self.settings.write_text('{"other": 12}')

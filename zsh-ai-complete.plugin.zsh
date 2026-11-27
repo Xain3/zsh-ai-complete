@@ -25,6 +25,14 @@ fi
 bindkey "$_zsh_ai_shortcut" ai_complete_widget
 unset _zsh_ai_saved_shortcut _zsh_ai_shortcut
 
+_zsh_ai_is_wsl() {
+  [[ -n "$WSL_DISTRO_NAME" || -n "$WSL_INTEROP" ]] && return 0
+  local release
+  [[ -r /proc/sys/kernel/osrelease ]] || return 1
+  release=$(</proc/sys/kernel/osrelease)
+  [[ "${release:l}" == *microsoft* ]]
+}
+
 # Run in the current shell: zsh-ai-complete config shortcut
 zsh-ai-complete() {
   if [[ "$1" != config || "$2" != shortcut || $# -ne 2 ]]; then
@@ -40,7 +48,15 @@ zsh-ai-complete() {
     return 1
   fi
 
-  local key part tmp binding common_warning answer settings_dir="${_zsh_ai_settings:h}"
+  local key part tmp binding common_warning windows_warning answer settings_dir="${_zsh_ai_settings:h}"
+  local is_wsl=0
+  if _zsh_ai_is_wsl; then
+    is_wsl=1
+    print -u2 'WSL: Windows Terminal may intercept Ctrl+Shift+C/V (copy/paste) or Ctrl+Shift+T (new tab).'
+    print -u2 'Ctrl+Shift+W can close a Windows Terminal pane; do not press it to test the picker.'
+    print -u2 'Windows may intercept Win+L, Win+D, and Alt+Tab. These keys may never reach this picker.'
+    print -u2 'Shortcuts can be customized; check your terminal and Windows settings.'
+  fi
   print -u2 -n 'Press the shortcut to use (Ctrl+G cancels): '
   if ! IFS= read -rs -k 1 key; then
     print -u2 '\n[zsh-ai-complete] Could not read a key.'
@@ -76,12 +92,22 @@ zsh-ai-complete() {
     $'\C-w') common_warning='Ctrl+W commonly deletes the previous word.' ;;
     $'\C-z') common_warning='Ctrl+Z commonly suspends the foreground process.' ;;
   esac
+  if (( is_wsl )); then
+    # Traditional terminals may encode Ctrl+Shift+letter as Ctrl+letter.
+    # This is a possible collision, not proof of the physical keys pressed.
+    case "$key" in
+      $'\C-c'|$'\C-v') windows_warning='This sequence may also represent Ctrl+Shift+C/V, commonly used for Windows Terminal copy/paste.' ;;
+      $'\C-t') windows_warning='This sequence may also represent Ctrl+Shift+T, commonly used for a new Windows Terminal tab.' ;;
+      $'\C-w') windows_warning='This sequence may also represent Ctrl+Shift+W, commonly used to close a Windows Terminal pane.' ;;
+    esac
+  fi
   binding=$(bindkey -M main "$key" 2>/dev/null)
   if [[ "$binding" == *' undefined-key' || "$binding" == *' ai_complete_widget' ]]; then
     binding=''
   fi
-  if [[ -n "$common_warning" || -n "$binding" ]]; then
+  if [[ -n "$common_warning" || -n "$windows_warning" || -n "$binding" ]]; then
     [[ -n "$common_warning" ]] && print -u2 -r -- "Warning: $common_warning"
+    [[ -n "$windows_warning" ]] && print -u2 -r -- "Warning: $windows_warning"
     [[ -n "$binding" ]] && print -u2 -r -- "Warning: current Zsh main keymap binding: $binding"
     print -u2 -n 'Save this shortcut anyway? [y/N] '
     if ! IFS= read -r answer || [[ "$answer" != [yY] ]]; then
