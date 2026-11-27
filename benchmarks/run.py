@@ -27,8 +27,8 @@ def load_cases():
     cases = [{'id': f'{group["category"]}-{index:02d}', 'category': group['category'],
               'prompt': prompt}
              for group in groups for index, prompt in enumerate(group['prompts'], 1)]
-    if len(cases) != 100 or len({case['id'] for case in cases}) != 100:
-        raise ValueError('The benchmark dataset must contain exactly 100 unique cases.')
+    if len(cases) != 130 or len({case['id'] for case in cases}) != 130:
+        raise ValueError('The benchmark dataset must contain exactly 130 unique cases.')
     return raw, cases
 
 
@@ -71,8 +71,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--output', required=True, type=Path, help='New JSONL results file')
     parser.add_argument('--workers', type=int, default=4, choices=range(1, 9))
+    parser.add_argument('--category', action='append', help='Only run the specified category; repeat to select several')
     args = parser.parse_args()
     dataset, cases = load_cases()
+    if args.category:
+        known = {case['category'] for case in cases}
+        if set(args.category) - known:
+            raise ValueError('Unknown benchmark category.')
+        cases = [case for case in cases if case['category'] in args.category]
     backend, model, token = choose_backend()
     provider = json.loads((ROOT / 'example.ai-providers.json').read_text(encoding='utf-8'))[backend]
     provider.update(model=model, token=token)
@@ -108,7 +114,7 @@ def main():
             results.write(json.dumps(record, ensure_ascii=False) + '\n')
             results.flush()
             if len(records) % 10 == 0 or record['status'] != 'ok':
-                print(f"Completed {len(records)}/100 ({sum(r['status'] == 'ok' for r in records)} successful)", flush=True)
+                print(f"Completed {len(records)}/{len(cases)} ({sum(r['status'] == 'ok' for r in records)} successful)", flush=True)
 
         # Fail early if authentication, model access, or the local server fails.
         first = run_case(cases[0], config, selection)

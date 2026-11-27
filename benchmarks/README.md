@@ -1,6 +1,6 @@
 # Completion benchmark
 
-This opt-in benchmark runs 100 synthetic prompts through the plugin's actual
+This opt-in benchmark runs 130 synthetic prompts through the plugin's actual
 `request.sh` helper. It saves each prompt, the returned suggestions, request
 duration, errors, and a summary. It **never executes suggestions**. Counts of
 five-line responses measure formatting, not command correctness or safety.
@@ -22,6 +22,8 @@ written next to the JSONL file with `.summary.json` appended. Results contain
 prompts and model output; store them privately. Existing result files are never
 overwritten. Use the same prompt dataset and record model versions when comparing
 runs. The tool does not measure token usage and does not claim semantic accuracy.
+Use `--category vague --category malformed --category typos` to run only the
+30 additional cases; category selection is recorded in the run summary.
 
 Optionally check the syntax of saved suggestions without executing them:
 
