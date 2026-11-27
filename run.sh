@@ -19,7 +19,7 @@ search_ia_widget() {
   jq -e --arg provider "$selected_provider" '.[$provider] | objects' "$CONFIG_FILE" >/dev/null || return 1
 
   # Quote paths for fzf's shell; provider settings are read as data by the helper.
-  reload_command="sleep 0.5; bash ${(q)PLUGIN_DIR}/request.sh ${(q)CONFIG_FILE} ${(q)SELECTION_FILE} {q}"
+  reload_command="sleep 0.5; bash ${(q)PLUGIN_DIR}/request.sh ${(q)CONFIG_FILE} ${(q)SELECTION_FILE}"
   selected=$(fzf --height=100% --layout=reverse --expect=esc,ctrl-c,ctrl-e \
     --bind "change:reload:$reload_command" \
     --prompt="Search for content in ($selected_provider): " \
@@ -52,7 +52,17 @@ show_providers() {
 }
 
 ai_complete_widget() {
-  local result
+  local result fzf_version
+  fzf_version=$(fzf --version 2>/dev/null) || {
+    print -u2 '[zsh-ai-complete] fzf 0.47.0 or newer is required.'
+    return 1
+  }
+  fzf_version=${fzf_version%% *}
+  autoload -Uz is-at-least
+  if [[ "$fzf_version" != <->.<->.<->* ]] || ! is-at-least 0.47.0 "$fzf_version"; then
+    print -u2 '[zsh-ai-complete] fzf 0.47.0 or newer is required to protect query privacy.'
+    return 1
+  fi
   ensure_config_file || return 1
   while true; do
     search_ia_widget

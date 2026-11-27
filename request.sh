@@ -4,7 +4,9 @@ set -o pipefail
 
 config_file=$1
 selection_file=$2
-query=$3
+[[ ${FZF_QUERY+x} ]] || { printf '%s\n' 'Missing fzf query.' >&2; exit 1; }
+query=$FZF_QUERY
+unset FZF_QUERY
 [[ -n $query ]] || exit 0
 provider=$(cat -- "$selection_file") || exit 1
 info=$(jq -ce --arg provider "$provider" '.[$provider] | objects' "$config_file") || exit 1
@@ -24,8 +26,8 @@ if [[ -n $token && $url != https://* && ! $url =~ ^http://(localhost|127\.0\.0\.
   exit 1
 fi
 
-payload=$(jq -n --arg model "$model" --arg system "$system_message" --arg query "$query" \
-  '{model:$model, messages:[{role:"system",content:$system},{role:"user",content:$query}], stream:false}') || exit 1
+payload=$(printf '%s' "$query" | jq -Rs --arg model "$model" --arg system "$system_message" \
+  '{model:$model, messages:[{role:"system",content:$system},{role:"user",content:.}], stream:false}') || exit 1
 
 # Pass credentials via curl's configuration input, not its process arguments.
 curl_config='header = "Content-Type: application/json"'
