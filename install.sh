@@ -29,13 +29,13 @@ print_error() {
 # 1. Create config directory if it doesn't exist
 if [[ ! -d "$CONFIG_DIR" ]]; then
   print_info "Creating config directory at $CONFIG_DIR..."
-  mkdir -p "$CONFIG_DIR"
+  (umask 077; mkdir -p "$CONFIG_DIR")
 fi
 
 # 2. Copy example config if it doesn't exist yet
 if [[ ! -f "$CONFIG_FILE" ]]; then
   if [[ -f "$EXAMPLE_CONFIG" ]]; then
-    cp "$EXAMPLE_CONFIG" "$CONFIG_FILE"
+    (umask 077; cp "$EXAMPLE_CONFIG" "$CONFIG_FILE")
     print_success "Config file created at $CONFIG_FILE."
   else
     print_error "Example config file not found: $EXAMPLE_CONFIG"
