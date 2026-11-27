@@ -1,5 +1,15 @@
 # Changelog
 
+## 1.1.0
+
+### Minor Changes
+
+- 2e46a20: Add configurable activation shortcuts and harden provider requests, configuration handling, and local Ollama defaults.
+
+### Patch Changes
+
+- Protect local query text and newly created provider configuration. **Upgrade note:** fzf 0.47.0 or newer is required; update fzf before using this version.
+
 ## Upstream history
 
 The entries below predate this fork's release process and are retained for
