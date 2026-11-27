@@ -56,6 +56,7 @@ Before submitting your PR:
 - [ ] The plugin works with configured AI models (OpenAI, Ollama, Gemini, etc.)
 - [ ] Your change does not break interactive flows (FZF, provider switching, etc.)
 - [ ] User-facing changes include a changeset with the appropriate SemVer bump
+- [ ] The PR title follows Conventional Commits before merging
 
 See [Versioning and releases](RELEASE_PROCESS.md) for the public interface,
 changeset instructions, and release process.
@@ -79,8 +80,9 @@ changeset instructions, and release process.
 
 ## ✍️ Commit Guidelines
 
-We follow a structured commit format using types, scopes, and emojis.
-Please refer to [`COMMITS.md`](./COMMITS.md) for examples and guidance.
+Pull request titles and final squash commit titles must both follow Conventional
+Commits. Check the squash title in the merge dialog before completing the merge.
+See [`COMMITS.md`](./COMMITS.md) for the format and examples.
 
 ---
 

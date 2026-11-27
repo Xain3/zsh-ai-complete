@@ -1,6 +1,7 @@
 # Commit Message Conventions
 
-This project uses **semantic commits with emoji prefixes** to improve clarity, automation, and collaboration.
+This project uses **Conventional Commits** for commit messages, pull request
+titles, and squash commit titles. Emoji are optional.
 
 We follow a structure inspired by [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) and [Gitmoji](https://gitmoji.dev/).
 
@@ -9,14 +10,29 @@ We follow a structure inspired by [Conventional Commits](https://www.conventiona
 ## 🔠 Format
 
 ```bash
-<type>(<scope>): <emoji> short description
+<type>[optional scope][!]: short description
 ```
 
 **Example:**
 
 ```bash
 feat(widget): ✨ add shortcut to dynamically switch AI provider
+fix: preserve the command line when completion is canceled
 ```
+
+## Pull requests and squash merges
+
+- Give every pull request a Conventional Commit title **before merging**.
+- When using squash merge, check that the final squash commit title also follows
+  the convention and accurately describes the combined change. The pull request
+  title may be used as the starting point; edit the squash title if needed.
+- Use `!` before the colon or a `BREAKING CHANGE:` footer for incompatible
+  changes. See [Versioning and releases](RELEASE_PROCESS.md) when choosing the
+  corresponding SemVer bump.
+
+For example, a pull request titled `feat(widget): add a configurable shortcut`
+can use the same title for its squash commit. A trailing pull request reference
+such as `(#12)` is fine.
 
 ---
 
@@ -71,7 +87,8 @@ feat(core): 💥 drop support for legacy OpenWebUI
 BREAKING CHANGE: This removes compatibility with older versions of the plugin.
 ```
 
-Use `BREAKING CHANGE:` in the footer to indicate a **major release bump**.
+Use `!` in the header or `BREAKING CHANGE:` in the footer to mark an
+incompatible change; use a **major release bump** for an already released API.
 
 ---
 
@@ -79,7 +96,7 @@ Use `BREAKING CHANGE:` in the footer to indicate a **major release bump**.
 
 - Use present tense (`add` not `added`, `fix` not `fixed`)
 - Keep messages under 100 characters when possible
-- Use emoji consistently as visual indicators
+- Emoji are optional and belong in the description, after the colon
 
 ---
 
