@@ -130,9 +130,22 @@ See [`project-docs/examples.md`](./project-docs/examples.md) for full walkthroug
 
 ## ⌨️ Shortcuts
 
+The activation shortcut defaults to `Ctrl+U`. To choose another shortcut,
+run this command in an interactive Zsh session after loading the plugin:
+
+```zsh
+zsh-ai-complete config shortcut
+```
+
+Press the desired control or escape key combination when prompted; `Ctrl+G`
+cancels. The shortcut is stored as JSON in
+`~/.config/zsh-ai-complete/settings.json`. Start a new Zsh session to apply
+the change. This may override an existing Zsh or plugin binding, so choose an
+unused shortcut. Delete this settings file to restore the default.
+
 | Key       | Action                                |
 |-----------|----------------------------------------|
-| `Ctrl+U`  | Launch the AI command assistant        |
+| `Ctrl+U`  | Launch the AI command assistant (default, configurable) |
 | `Ctrl+E`  | Switch between configured providers    |
 | `ESC`     | Cancel without applying a suggestion   |
 

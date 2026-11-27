@@ -46,8 +46,12 @@ Once the AI assistant is triggered and the FZF interface is visible:
 
 ## 📝 Notes
 
-- The default shortcut (`Ctrl+U`) can be changed by modifying the `bindkey` line inside the `zsh-ai-complete.plugin.zsh` file.
-- All shortcuts can be remapped to suit your preferences.
+- Run `zsh-ai-complete config shortcut` in Zsh and press a control or escape
+  key combination to change the activation shortcut. Press `Ctrl+G` to cancel.
+- The setting is stored in `~/.config/zsh-ai-complete/settings.json` and takes
+  effect in a new Zsh session. Delete the settings file to restore `Ctrl+U`.
+- The selected key may already be assigned by Zsh or another plugin. The
+  `Ctrl+E` and `ESC` shortcuts inside FZF are not changed by this setting.
 
 ---
 
