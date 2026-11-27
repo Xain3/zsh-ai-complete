@@ -55,6 +55,10 @@ Before submitting your PR:
 - [ ] Shortcuts like `Ctrl+U` and `Ctrl+E` behave correctly
 - [ ] The plugin works with configured AI models (OpenAI, Ollama, Gemini, etc.)
 - [ ] Your change does not break interactive flows (FZF, provider switching, etc.)
+- [ ] User-facing changes include a changeset with the appropriate SemVer bump
+
+See [Versioning and releases](RELEASE_PROCESS.md) for the public interface,
+changeset instructions, and release process.
 
 ---
 

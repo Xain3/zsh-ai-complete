@@ -1,5 +1,10 @@
 # Changelog
 
+## Upstream history
+
+The entries below predate this fork's release process and are retained for
+historical context. Fork releases will be added above this section.
+
 ## 0.0.0-release-20250414001219
 
 ### Patch Changes
