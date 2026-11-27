@@ -1,82 +1,126 @@
-# Versioning and releases
+# 📦 Release Process
 
-The fork uses [Semantic Versioning 2.0.0](https://semver.org/): `MAJOR.MINOR.PATCH`.
-The version in `package.json` is the source of truth. A released Git tag is
-`v` followed by that exact version, for example `v1.1.0`. Never move or reuse a
-published version or tag. This process creates GitHub releases; it does not
-publish a package to npm.
+This document describes the complete release flow for the `zsh-ai-complete` project, for both **beta** (prerelease) and **stable** versions, using [Changesets](https://github.com/changesets/changesets).
 
-The public interface includes the documented Zsh commands and shortcuts,
-provider and settings JSON formats, installation instructions, and required
-runtime tools. Choose the increment based on the effect on users:
+---
 
-- **Patch:** backward-compatible bug or security fixes.
-- **Minor:** backward-compatible functionality, such as a new optional setting.
-- **Major:** incompatible behavior, configuration, supported environments, or
-  minimum dependency changes for an already released version.
+## 🧪 Beta Release
 
-The inherited `package.json` version is `1.0.0`; the fork currently has no
-release tags. The changelog retains the original project's history separately.
-The included minor changeset records features already merged into this fork,
-so the first version-preparation step proposes `1.1.0`. No fork release exists
-until a maintainer creates and pushes its tag.
+Use this process to generate versions like `1.0.1-beta.0`, `1.0.1-beta.1`, etc.
 
-## Record a change
+### 🔁 1. Create a Changeset
 
-For each user-facing change, include a changeset in its pull request:
-This requires Node.js and Corepack; install Corepack separately if your Node.js
-distribution does not include it.
-
-```sh
-corepack yarn install --frozen-lockfile
-corepack yarn changeset
+```bash
+npx changeset
 ```
 
-Select `zsh-ai-complete`, choose the appropriate bump, and describe the change
-in user-facing language. Commit the new `.changeset/*.md` file with the change.
-Documentation-only or internal changes that do not affect users need no
-changeset. When several changesets are pending, Changesets combines them and
-uses the highest required increment.
+- Select the package: `zsh-ai-complete`
+- Type: usually `patch` for betas
+- Changelog message: **in English**
 
-## Prepare a stable release
+### 🚀 2. Run the Release Beta pipeline
 
-1. Start from an up-to-date `main` and create a release branch.
-2. Run `corepack yarn install --frozen-lockfile` and
-   `corepack yarn version-packages`. Changesets consumes pending changesets,
-   updates `package.json`, and adds their notes to `CHANGELOG.md`.
-3. Review the version and changelog, run `corepack yarn test:release`, commit
-   the changes, and open a pull request into `main`. Merge it after review.
-4. Update the local `main`, check that the version and intended commit are
-   correct, then create and push the matching annotated tag:
+Go to **GitHub > Actions > Release Beta** and run it with:
 
-   ```sh
-   git switch main
-   git pull --ff-only
-   git tag -a v1.1.0 -m "Release v1.1.0"
-   git push origin v1.1.0
-   ```
+- Branch: `main`
+- Prerelease suffix: `beta` (or `alpha`, `rc`, etc.)
 
-   Substitute the prepared version for `1.1.0`. Pushing the tag triggers the
-   GitHub release workflow. It checks that the tag is valid SemVer, exactly
-   matches `package.json`, and points to a commit reachable from `main`; it
-   then creates a GitHub release with generated notes. Existing releases and
-   tags are not overwritten. The workflow needs Actions to have write access
-   to repository contents. If it fails, inspect the workflow before retrying.
+### 🧠 Release Beta pipeline - What it does
 
-## Prereleases
+- Runs `yarn changeset pre enter beta`
+- Runs `yarn changeset version`
+- Generates version like `1.0.1-beta.0`
+- Creates changelog
+- Commits and tags `v1.0.1-beta.0`
+- Publishes a GitHub Release
 
-Use Changesets' prerelease mode on a dedicated release branch:
+### 🧹 Release Beta pipeline - Notes
 
-```sh
-corepack yarn changeset pre enter beta
-corepack yarn version-packages
+- If the tag `vX.Y.Z-beta.N` already exists, the pipeline will fail.
+- You can delete duplicate tags manually:
+
+```bash
+git push origin :refs/tags/v1.0.1-beta.0
+git tag -d v1.0.1-beta.0
+git fetch --prune --tags
 ```
 
-Review and merge the resulting prerelease version and changelog, then push the
-matching `v...-beta.N` tag using the same steps above. The release workflow
-marks any SemVer prerelease as a GitHub prerelease. Subsequent prereleases
-require new changesets and another version-preparation step. To leave the
-prerelease cycle, run `corepack yarn changeset pre exit` and
-`corepack yarn version-packages`, review the resulting stable version in a
-pull request, and then tag it after merging. Do not leave prerelease mode active
-on `main` unintentionally.
+---
+
+## 🚀 Stable Release
+
+Use this process to promote a prerelease to a final version like `1.0.1`.
+
+### 🔚 1. Exit the prerelease cycle
+
+```bash
+yarn changeset pre exit
+git add .changeset/pre.json
+git commit -m "chore(changeset): 🔚 exit beta prerelease cycle"
+git push origin main
+```
+
+### 🧾 2. Create a new Changeset
+
+```bash
+npx changeset
+```
+
+- Type: usually `patch` to promote the beta
+- Changelog message: describe the main change
+
+### 🛠️ 3. Run the Release Stable pipeline
+
+Go to **GitHub > Actions > Release Stable** and run it with:
+
+- Version: `1.0.1`
+- Branch: `main`
+
+### 🧠 Release Stable pipeline - What it does
+
+- Runs `yarn changeset version`
+- Generates a new stable version (no suffix)
+- Commits `package.json`, changelog, and tag
+- Creates a GitHub Release
+
+### 🧹 Release Stable pipeline - Notes
+
+- If the tag `vX.Y.Z` already exists, the pipeline will fail.
+- You can delete it manually:
+
+```bash
+git push origin :refs/tags/v1.0.1
+git tag -d v1.0.1
+git fetch --prune --tags
+```
+
+---
+
+## 🧠 Mind Map (MermaidJS)
+
+```mermaid
+mindmap
+  root((Release Flow))
+    Beta Release
+      Create changeset (npx changeset)
+      GitHub Actions > Release Beta
+        Inputs: branch=main, suffix=beta
+        Runs: pre enter → version → tag
+      Release: vX.Y.Z-beta.N
+      Notes
+        Duplicate tag
+        Resolve manually
+    Stable Release
+      Exit cycle (pre exit)
+      Create new changeset
+      GitHub Actions > Release Stable
+        Inputs: version=1.0.1, branch=main
+        Runs: version → tag
+      Release: vX.Y.Z
+      Notes
+        Duplicate tag
+```
+
+---
+
+With this process, your project follows a versioned, traceable, and production-safe release cycle. 💡

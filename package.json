@@ -1,7 +1,6 @@
 {
   "name": "zsh-ai-complete",
   "version": "1.0.0",
-  "packageManager": "yarn@1.22.22",
   "description": "Zsh plugin to autocomplete and generate terminal commands using AI (OpenAI, Ollama, Gemini, etc.)",
   "repository": {
     "type": "git",
@@ -27,9 +26,5 @@
     "@commitlint/cli": "19.8.0",
     "@commitlint/config-conventional": "19.8.0"
   },
-  "scripts": {
-    "changeset": "changeset",
-    "version-packages": "changeset version",
-    "test:release": "node --test tests/release.test.cjs"
-  }
+  "scripts": {}
 }
