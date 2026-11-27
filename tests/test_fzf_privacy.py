@@ -93,24 +93,33 @@ class FzfPrivacyTest(unittest.TestCase):
                 self.assertTrue(request_received.is_set(), "No request received from fzf")
                 self.assertEqual(requests[-1]["messages"][1]["content"], query)
 
-                # Walk only this test's process tree; do not inspect unrelated processes.
+                # Discover parent IDs from procfs; the optional task/children
+                # interface is not available on every Linux kernel.
+                children = {}
+                for entry in pathlib.Path('/proc').iterdir():
+                    if not entry.name.isdigit():
+                        continue
+                    try:
+                        stat = (entry / 'stat').read_text()
+                        # The parenthesized command can contain spaces or ')'.
+                        ppid = int(stat[stat.rfind(')') + 2:].split()[1])
+                    except (FileNotFoundError, ProcessLookupError, PermissionError):
+                        continue
+                    children.setdefault(ppid, []).append(int(entry.name))
+
+                # Inspect command lines only in this test's process tree.
                 pending, seen = [proc.pid], set()
                 while pending:
                     pid = pending.pop()
                     if pid in seen:
                         continue
-                    seen.add(pid)
                     try:
                         cmdline = pathlib.Path(f"/proc/{pid}/cmdline").read_bytes()
-                        child_files = list(pathlib.Path(f"/proc/{pid}/task").glob("*/children"))
                     except (FileNotFoundError, ProcessLookupError):
                         continue
+                    seen.add(pid)
                     self.assertNotIn(query.encode(), cmdline)
-                    for child_file in child_files:
-                        try:
-                            pending.extend(map(int, child_file.read_text().split()))
-                        except FileNotFoundError:
-                            pass
+                    pending.extend(children.get(pid, []))
                 self.assertGreaterEqual(len(seen), 3)
 
                 release_response.set()
