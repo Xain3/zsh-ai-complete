@@ -25,12 +25,12 @@ search_ia_widget() {
     --prompt="Search for content in ($selected_provider): " \
     --phony --disabled < /dev/null)
   fzf_status=$?
-  [[ $fzf_status -eq 0 ]] || return 0
   key=${selected%%$'\n'*}
-  if [[ "$key" == ctrl-e ]]; then
+  if [[ "$key" == ctrl-e && ( $fzf_status -eq 0 || $fzf_status -eq 1 ) ]]; then
     show_providers
     return 42
   fi
+  [[ $fzf_status -eq 0 ]] || return 0
   [[ "$key" == esc || "$key" == ctrl-c ]] && return 0
   [[ "$selected" == *$'\n'* ]] || return 0
   choice=${selected#*$'\n'}

@@ -47,6 +47,21 @@ zsh -c '
   export FZF_STATUS=130 FZF_RESULT=""
   search_ia_widget || exit 5
   [[ "$LBUFFER" == "prefix echo safe" ]] || exit 6
+  picker_calls=0
+  show_providers() { (( picker_calls++ )); return 0; }
+  export FZF_RESULT=ctrl-e FZF_STATUS=1
+  search_ia_widget; [[ $? -eq 42 && $picker_calls -eq 1 ]] || exit 7
+  [[ "$LBUFFER" == "prefix echo safe" ]] || exit 8
+  export FZF_STATUS=0
+  search_ia_widget; [[ $? -eq 42 && $picker_calls -eq 2 ]] || exit 9
+  for FZF_STATUS in 2 130; do
+    export FZF_STATUS
+    search_ia_widget || exit 10
+    [[ $picker_calls -eq 2 && "$LBUFFER" == "prefix echo safe" ]] || exit 11
+  done
+  export FZF_STATUS=1 FZF_RESULT=""
+  search_ia_widget || exit 12
+  [[ $picker_calls -eq 2 && "$LBUFFER" == "prefix echo safe" ]] || exit 13
 '
 rm "$tmp/bin/curl"
 python3 - "$root" "$tmp" <<'PY'
