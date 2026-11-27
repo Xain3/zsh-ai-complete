@@ -100,9 +100,9 @@ class FzfPrivacyTest(unittest.TestCase):
                     if not entry.name.isdigit():
                         continue
                     try:
-                        stat = (entry / 'stat').read_text()
+                        stat = (entry / 'stat').read_bytes()
                         # The parenthesized command can contain spaces or ')'.
-                        ppid = int(stat[stat.rfind(')') + 2:].split()[1])
+                        ppid = int(stat[stat.rfind(b')') + 2:].split()[1])
                     except (FileNotFoundError, ProcessLookupError, PermissionError):
                         continue
                     children.setdefault(ppid, []).append(int(entry.name))
