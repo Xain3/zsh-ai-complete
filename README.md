@@ -39,7 +39,7 @@ Make sure the following tools are installed on your system:
 
 | Tool  | Purpose                                 | Link |
 |-------|-----------------------------------------|------|
-| [`fzf`](https://github.com/junegunn/fzf)   | Interactive search UI               | [Link](https://github.com/junegunn/fzf) |
+| [`fzf`](https://github.com/junegunn/fzf) 0.47.0 or newer | Interactive search UI | [Link](https://github.com/junegunn/fzf) |
 | [`curl`](https://curl.se/)                | API requests                         | [Link](https://curl.se/) |
 | [`jq`](https://stedolan.github.io/jq/)    | JSON parsing                         | [Link](https://stedolan.github.io/jq/) |
 | [`bat`](https://github.com/sharkdp/bat)   | Syntax-highlighted command preview   | [Link](https://github.com/sharkdp/bat) |
@@ -109,6 +109,11 @@ URL before entering sensitive text. Suggestions are inserted into your command
 line and run only when you execute them. Review them first. New configuration
 files are created with restrictive permissions; check permissions on any files
 that already existed.
+
+`fzf` 0.47.0 or newer is required so queries can be passed through the child
+process environment rather than command-line arguments. The plugin refuses to
+start with older versions. Environment visibility depends on the host's process
+access controls; a local process with sufficient privileges may still read it.
 
 Provider tokens require HTTPS for non-loopback endpoints. Plain HTTP with a
 token is permitted only for `localhost`, `127.0.0.1`, or `[::1]`. Requests
