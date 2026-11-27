@@ -7,13 +7,23 @@ source "$PLUGIN_DIR/run.sh"
 # Register ZLE widget
 zle -N ai_complete_widget
 
+# Both saved and captured shortcuts must start with a control character.
+_zsh_ai_valid_shortcut() {
+  [[ -n "$1" && "${1[1]}" == [[:cntrl:]] && "$1" != $'\e' &&
+     "$1" != $'\C-g' && "$1" != *$'\n'* && "$1" != *$'\r'* ]]
+}
+
 # Shortcut settings are JSON data, never sourced as shell code.
 _zsh_ai_settings="$HOME/.config/zsh-ai-complete/settings.json"
 _zsh_ai_shortcut=$'\C-u'
 if [[ -f "$_zsh_ai_settings" ]]; then
   if (( $+commands[jq] )); then
-    _zsh_ai_saved_shortcut=$(jq -er '.shortcut | select(type == "string" and length > 0)' "$_zsh_ai_settings" 2>/dev/null)
-    if [[ -n "$_zsh_ai_saved_shortcut" ]]; then
+    if _zsh_ai_saved_shortcut=$(jq -jer -s '
+      if length == 1 and (.[0] | type == "object") then
+        .[0].shortcut | select(type == "string" and length > 0 and
+          (contains("\u0000") or contains("\n") or contains("\r") | not))
+      else empty end
+    ' "$_zsh_ai_settings" 2>/dev/null) && _zsh_ai_valid_shortcut "$_zsh_ai_saved_shortcut"; then
       _zsh_ai_shortcut="$_zsh_ai_saved_shortcut"
     else
       print -u2 '[zsh-ai-complete] Invalid shortcut settings; using Ctrl+U.'
@@ -72,7 +82,7 @@ zsh-ai-complete() {
     return 1
   fi
   # Printable characters and lone Escape would disrupt ordinary editing.
-  if [[ "$key" == [[:print:]] || "$key" == $'\e' || "$key" == *$'\n'* || "$key" == *$'\r'* || -z "$key" ]]; then
+  if ! _zsh_ai_valid_shortcut "$key"; then
     print -u2 '[zsh-ai-complete] Choose a control or escape key combination.'
     return 1
   fi
@@ -115,7 +125,7 @@ zsh-ai-complete() {
       return 1
     fi
   fi
-  if [[ -f "$_zsh_ai_settings" ]] && ! jq -e 'type == "object"' "$_zsh_ai_settings" >/dev/null 2>&1; then
+  if [[ -f "$_zsh_ai_settings" ]] && ! jq -se 'length == 1 and (.[0] | type == "object")' "$_zsh_ai_settings" >/dev/null 2>&1; then
     print -u2 '[zsh-ai-complete] Settings are not a JSON object; fix the file before updating it.'
     return 1
   fi

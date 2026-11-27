@@ -104,7 +104,32 @@ class ShortcutTests(unittest.TestCase):
     def test_cancel_and_printable_do_not_write(self):
         self.assertNotEqual(self.capture(b"\x07"), 0)
         self.assertNotEqual(self.capture(b"x"), 0)
+        self.assertNotEqual(self.capture(b"ab"), 0)
+        self.assertNotEqual(self.capture(b"a\x18"), 0)
         self.assertFalse(self.settings.exists())
+
+    def test_invalid_saved_shortcuts_fall_back_without_binding_printable_keys(self):
+        self.settings.parent.mkdir(parents=True)
+        for shortcut in ("x", "ab", "a\x18", "\x1b", "\x07", "\x18\n", "\x18\r", "\x18\x00"):
+            with self.subTest(shortcut=repr(shortcut)):
+                self.settings.write_text(json.dumps({"shortcut": shortcut}))
+                default = self.binding("\x15")
+                self.assertIn("ai_complete_widget", default.stdout)
+                self.assertIn("Invalid shortcut settings", default.stderr)
+                self.assertNotIn("ai_complete_widget", self.binding(shortcut[0]).stdout)
+
+    def test_malformed_or_multiple_json_documents_fall_back(self):
+        self.settings.parent.mkdir(parents=True)
+        for extra in (' trailing garbage', ' {"shortcut":"\\u0019"}'):
+            with self.subTest(extra=extra):
+                self.settings.write_text('{"shortcut":"\\u0018"}' + extra)
+                default = self.binding("\x15")
+                self.assertIn("ai_complete_widget", default.stdout)
+                self.assertIn("Invalid shortcut settings", default.stderr)
+                self.assertNotIn("ai_complete_widget", self.binding("\x18").stdout)
+                original = self.settings.read_text()
+                self.assertNotEqual(self.capture(b"\x18"), 0)
+                self.assertEqual(self.settings.read_text(), original)
 
     def test_warns_for_common_and_existing_binding_and_requires_confirmation(self):
         self.assertNotEqual(self.capture(b"\x12", b"n\n"), 0)
