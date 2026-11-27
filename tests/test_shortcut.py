@@ -82,6 +82,25 @@ class ShortcutTests(unittest.TestCase):
         self.assertEqual(json.loads(self.settings.read_text())["shortcut"], "\x1bx")
         self.assertIn("ai_complete_widget", self.binding("\x1bx").stdout)
 
+    def test_repeated_control_keys_are_saved_as_one_sequence(self):
+        repeated = b"\x18\x18"
+        self.assertEqual(self.capture(repeated), 0)
+        self.assertEqual(json.loads(self.settings.read_text())["shortcut"], "\x18\x18")
+        self.assertIn("ai_complete_widget", self.binding("\x18\x18").stdout)
+
+    def test_sticky_modifier_terminal_bytes_match_held_modifier(self):
+        # The terminal may encode held Ctrl+X and Sticky Keys Ctrl then X as
+        # the same byte. This tests the resulting byte stream, not the Windows
+        # accessibility feature or its keyboard-to-terminal translation.
+        held_ctrl_x = b"\x18"
+        sticky_ctrl_then_x = b"\x18"
+        self.assertEqual(self.capture(held_ctrl_x), 0)
+        held = json.loads(self.settings.read_text())["shortcut"]
+        self.assertEqual(self.capture(sticky_ctrl_then_x), 0)
+        sticky = json.loads(self.settings.read_text())["shortcut"]
+        self.assertEqual(held, sticky)
+        self.assertIn("ai_complete_widget", self.binding(sticky).stdout)
+
     def test_cancel_and_printable_do_not_write(self):
         self.assertNotEqual(self.capture(b"\x07"), 0)
         self.assertNotEqual(self.capture(b"x"), 0)
